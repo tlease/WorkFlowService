@@ -1,0 +1,5 @@
+# byte code
+*.py[cod]
+
+# virtualenv 
+env/

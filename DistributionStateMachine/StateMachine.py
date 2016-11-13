@@ -2,14 +2,9 @@
 
 class DistributionState(object):
 
-    def __int__(self, workflow_id=None):
-        """
-        :param context: Statte machine context
-        :param workflow_id:
-        :return:
-        """
+    def __init__(self, workflow_id=None):
         self._workflow_id = workflow_id
-        print self
+        self.is_final_state = None
 
     def __repr__(self):
         return "Base DistributionState: WorkflowID %s" % self._workflow_id
@@ -28,9 +23,11 @@ class CreatedState(DistributionState):
 
     def __init__(self, workflow_id=None):
         super(CreatedState, self).__init__(workflow_id)
+        self.is_final_state = False
 
     def work(self):
         print "Created initial state machine. Workflow %s" % self._workflow_id
+        return True
 
     def complete(self, success, context):
         if success:
@@ -43,6 +40,7 @@ class SyndicationState(DistributionState):
 
     def __init__(self, workflow_id=None):
         super(SyndicationState, self).__init__(workflow_id)
+        self.is_final_state = False
 
     def work(self):
         print 'Running Syndication! for workflow %s' % self._workflow_id
@@ -59,10 +57,10 @@ class EncodeState(DistributionState):
 
     def __init__(self, workflow_id=None):
         super(EncodeState, self).__init__(workflow_id)
+        self.is_final_state = False
 
     def work(self):
         print 'Running Encode! for workflow %s' % self._workflow_id
-
         return True
 
     def complete(self, success, context):
@@ -76,6 +74,7 @@ class SuspendState(DistributionState):
 
     def __init__(self, workflow_id=None):
         super(SuspendState, self).__init__(workflow_id)
+        self.is_final_state = True
 
     def work(self):
         print "Can't really work in suspend state. Workflow %s" % self._workflow_id
@@ -88,6 +87,7 @@ class CompletedState(DistributionState):
 
     def __init__(self, workflow_id=None):
         super(CompletedState, self).__init__(workflow_id)
+        self.is_final_state = True
 
     def work(self):
         print "Completed State reached! Workflow %s" % self._workflow_id
