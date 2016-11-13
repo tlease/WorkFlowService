@@ -2,14 +2,10 @@
 
 class DistributionState(object):
 
-    def __init__(self, workflow_id=None):
-        self._workflow_id = workflow_id
+    def __init__(self):
         self.is_final_state = None
 
-    def __repr__(self):
-        return "Base DistributionState: WorkflowID %s" % self._workflow_id
-
-    def work(self):
+    def work(self, workflow_id):
         raise NotImplemented("Method must be overridden in concrete class.")
 
     def complete(self, success, context):
@@ -21,12 +17,12 @@ class DistributionState(object):
 
 class CreatedState(DistributionState):
 
-    def __init__(self, workflow_id=None):
-        super(CreatedState, self).__init__(workflow_id)
+    def __init__(self):
+        super(CreatedState, self).__init__()
         self.is_final_state = False
 
-    def work(self):
-        print "Created initial state machine. Workflow %s" % self._workflow_id
+    def work(self, workflow_id):
+        print "Created initial state machine, workflow id %s" % workflow_id
         return True
 
     def complete(self, success, context):
@@ -38,12 +34,12 @@ class CreatedState(DistributionState):
 
 class SyndicationState(DistributionState):
 
-    def __init__(self, workflow_id=None):
-        super(SyndicationState, self).__init__(workflow_id)
+    def __init__(self):
+        super(SyndicationState, self).__init__()
         self.is_final_state = False
 
-    def work(self):
-        print 'Running Syndication! for workflow %s' % self._workflow_id
+    def work(self, workflow_id):
+        print 'Running Syndication! for workflow %s' % workflow_id
         return True
 
     def complete(self, success, context):
@@ -55,12 +51,12 @@ class SyndicationState(DistributionState):
 
 class EncodeState(DistributionState):
 
-    def __init__(self, workflow_id=None):
-        super(EncodeState, self).__init__(workflow_id)
+    def __init__(self):
+        super(EncodeState, self).__init__()
         self.is_final_state = False
 
-    def work(self):
-        print 'Running Encode! for workflow %s' % self._workflow_id
+    def work(self, workflow_id):
+        print 'Running Encode! for workflow %s' % workflow_id
         return True
 
     def complete(self, success, context):
@@ -72,25 +68,25 @@ class EncodeState(DistributionState):
 
 class SuspendState(DistributionState):
 
-    def __init__(self, workflow_id=None):
-        super(SuspendState, self).__init__(workflow_id)
+    def __init__(self):
+        super(SuspendState, self).__init__()
         self.is_final_state = True
 
-    def work(self):
-        print "Can't really work in suspend state. Workflow %s" % self._workflow_id
+    def work(self, workflow_id):
+        print "Can't really work in suspend state. Workflow %s" % workflow_id
 
     def reset(self, context):
-        print "Resetting state. workflow %s" % self._workflow_id
+        print "Resetting state."
         self.next_state(context, CreatedState)
 
 class CompletedState(DistributionState):
 
-    def __init__(self, workflow_id=None):
-        super(CompletedState, self).__init__(workflow_id)
+    def __init__(self):
+        super(CompletedState, self).__init__()
         self.is_final_state = True
 
-    def work(self):
-        print "Completed State reached! Workflow %s" % self._workflow_id
+    def work(self, workflow_id):
+        print "Completed State reached! Workflow %s" % workflow_id
 
     def complete(self, success, context):
-        print "Already in final state. No-op. Workflow %s" % self._workflow_id
+        print "Already in final state. No-op."

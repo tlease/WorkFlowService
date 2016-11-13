@@ -8,12 +8,24 @@ from DistributionStateMachine import StateMachine, Context
 
 class TestStateContext(unittest.TestCase):
 
-    def setUp(self):
-        self.context = Context.Context('wkfl123')
-
     def test_context_initial_state(self):
-        self.assertTrue(isinstance(self.context._current, StateMachine.CreatedState))
+        context = Context.Context('wkfl123')
+        self.assertTrue(isinstance(context._current, StateMachine.CreatedState))
 
     def test_context_runall(self):
-        self.context.run_remaining_states()
-        self.assertTrue( isinstance(self.context._current, StateMachine.CompletedState))
+        context = Context.Context("wkfl_321")
+        context.run_until_final_state()
+        self.assertTrue( isinstance(context._current, StateMachine.CompletedState))
+
+    def test_context_iteration(self):
+        context = Context.Context("wkfl_789")
+        context.set_state(StateMachine.SyndicationState)
+        self.assertTrue(isinstance(context._current, StateMachine.SyndicationState))
+
+        context.work()
+        context.complete(True)
+        self.assertTrue(isinstance(context._current, StateMachine.EncodeState))
+
+        context.work()
+        context.complete(False)
+        self.assertTrue(isinstance(context._current, StateMachine.SuspendState))

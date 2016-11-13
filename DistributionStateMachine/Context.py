@@ -8,17 +8,22 @@ class Context(object):
     """
     def __init__(self, workflow_id=None):
         self._workflow_id = workflow_id
-        self._current = StateMachine.CreatedState(self._workflow_id)
+        self._current = StateMachine.CreatedState()
+        print "Created state context. Workflow ID %s" % workflow_id
 
     def set_state(self, new_state):
-        self._current = new_state(self._workflow_id)
+        self._current = new_state()
 
     def work(self):
-        self._current.work()
+        res = self._current.work(self._workflow_id)
+        return res
 
-    def run_remaining_states(self):
+    def complete(self, success):
+        self._current.complete(success, self)
+
+    def run_until_final_state(self):
         while not self._current.is_final_state:
-            res = self._current.work()
+            res = self._current.work(self._workflow_id)
             self._current.complete(res, self)
 
 class Test(object):
