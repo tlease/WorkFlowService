@@ -1,5 +1,8 @@
 # byte code
 *.py[cod]
 
+# pycharm 
+.idea/
+
 # virtualenv 
 env/
