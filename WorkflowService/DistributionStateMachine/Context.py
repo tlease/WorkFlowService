@@ -14,6 +14,9 @@ class Context(object):
     def set_state(self, new_state):
         self._current = new_state()
 
+    def get_state(self):
+        return self._current
+
     def work(self):
         res = self._current.work(self._workflow_id)
         return res
