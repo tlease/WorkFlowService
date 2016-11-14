@@ -28,7 +28,3 @@ class Context(object):
         while not self._current.is_final_state:
             res = self._current.work(self._workflow_id)
             self._current.complete(res, self)
-
-class Test(object):
-    def __init__(self, arg=None):
-        self.arg = arg
