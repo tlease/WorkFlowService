@@ -1,4 +1,4 @@
-import StateMachine
+import state_machine
 
 class Context(object):
     """
@@ -8,9 +8,9 @@ class Context(object):
     """
     def __init__(self, workflow_id=None):
         self.workflow_id = workflow_id
-        self._current = StateMachine.CreatedState()
+        self._current = state_machine.CreatedState()
         print "Created state context. Workflow ID %s" % workflow_id
-        self._current.work(None, self)  # no worker will ever work on initial state, so immediately transition it.
+        self.set_state(state_machine.EncodeState)  # no worker will ever work on initial state, so immediately transition it.
 
     def set_state(self, new_state):
         self._current = new_state()
