@@ -22,10 +22,5 @@ class TestStateContext(unittest.TestCase):
         context.set_state(StateMachine.SyndicationState)
         self.assertTrue(isinstance(context._current, StateMachine.SyndicationState))
 
-        context.work()
-        context.complete(True)
+        context.work(None)
         self.assertTrue(isinstance(context._current, StateMachine.EncodeState))
-
-        context.work()
-        context.complete(False)
-        self.assertTrue(isinstance(context._current, StateMachine.SuspendState))
