@@ -6,14 +6,13 @@ class Context(object):
     Work() and Complete() methods are passed along to the current state
 
     """
-    def __init__(self, workflow_id=None):
+    def __init__(self, workflow_id):
         self.workflow_id = workflow_id
-        self._current = state_machine.CreatedState()
-        print "Created state context. Workflow ID %s" % workflow_id
-        self.set_state(state_machine.EncodeState)  # no worker will ever work on initial state, so immediately transition it.
+        self._current = state_machine.CreatedState(self.workflow_id)
+        self.work(None)  # no worker will ever work on initial state, so immediately transition it.
 
     def set_state(self, new_state):
-        self._current = new_state()
+        self._current = new_state(self.workflow_id)
 
     def get_state(self):
         return self._current
@@ -24,3 +23,7 @@ class Context(object):
     def run_until_final_state(self):
         while not self._current.is_final_state:
             res = self._current.work(None, self)
+
+if __name__ == '__main__':
+    c = Context('abc123')
+    c.run_until_final_state()

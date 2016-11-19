@@ -5,7 +5,7 @@ import uuid
 import json
 from collections import namedtuple
 
-import DistributionStateMachine.Context
+from dist_state_machine import context
 
 
 class WorkflowService(object):
@@ -26,6 +26,9 @@ class WorkflowService(object):
             wf.dump()
 
     def get_workflow(self, id):
+        """
+        First check in mem, if not there check disk
+        """
         wf = self.workflows.get(id, None)
         if not wf:
             wf = load_workflow(id)
@@ -36,7 +39,7 @@ class WorkflowService(object):
     def get_or_create_workflow(self, type='DistributionStateMachine', id=None):
         wf = self.get_workflow(id)
         if not wf:
-            wf = WorkFlow(type, id)
+            wf = Workflow(type, id)
         return wf
 
     def receive_event(self, json_event):
@@ -46,7 +49,7 @@ class WorkflowService(object):
         wf.receive_event(event_obj)
 
 
-class WorkFlow(object):
+class Workflow(object):
     """
     instance of a workflow. Has an ID, maitains a reference to a StateMachine context.
     """
@@ -70,7 +73,7 @@ class WorkFlow(object):
 
 def read_event(json_event):
     """
-    Casts the json DTP as an object Event with named properties.
+    Casts the json DTO as an object Event with named properties.
     It's expected that the json contains id, type, and a payload of values useful to the
     state machine for the current state / event type
 
@@ -97,7 +100,7 @@ def workflow_filename(id):
 
 def dump_workflow(obj, id):
     if not os.path.exists('workflows'):
-        os.makedir('workflows')
+        os.mkdir('workflows')
     pickle.dump(obj, open(workflow_filename(id), 'wb'))
 
 
@@ -105,14 +108,14 @@ def load_workflow(id):
     filename = workflow_filename(id)
     if not os.path.exists(filename):
         raise Exception("File {0} not found".format(filename))
-    wf = pickle.load(filename)
+    wf = pickle.load(open(filename, 'rb'))
     return wf
 
 
 def get_state_machine(type):
     return {
-        "DistributionStateMachine": DistributionStateMachine.Context
-    }.get(type, None)
+        "DistributionStateMachine": context.Context
+    }[type]
 
 
 def generate_id():
