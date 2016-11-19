@@ -7,8 +7,9 @@ from collections import namedtuple
 
 from dist_state_machine import context
 
+WORKFLOW_FOLDER = os.path.join(os.path.realpath(__file__), 'workflows')
 
-class WorkflowService(object):
+class WorkflowManager(object):
     """
     Creates and manages state machines. Receives events and forwards them
     to the correct state machine.
@@ -42,26 +43,20 @@ class WorkflowService(object):
             wf = Workflow(type, id)
         return wf
 
-    def receive_event(self, json_event):
-        """Some json that can be cast as event.Event type"""
-        event_obj = read_event(json_event)
-        wf = self.get_workflow(event_obj.id)
-        wf.receive_event(event_obj)
-
 
 class Workflow(object):
     """
     instance of a workflow. Has an ID, maitains a reference to a StateMachine context.
     """
-    def __init__(self, state_machine_type, id=None, priority=10):
+    def __init__(self, state_machine_type, id=None, priority=10, **kwargs):
         self.id = id or generate_id()
         context = get_state_machine(state_machine_type)
         self._state_context = context(id)
-        self._file_name = "workflows\\{0}.pickle".format(self.id)
+        self._file_name = os.path.join(WORKFLOW_FOLDER, "{0}.pickle".format(self.id))
+        self.__dict__.update(kwargs)  # sets k/v attrs in class for each arbitrary kwarg
 
     def dump(self):
         dump_workflow(self, self._file_name)
-
 
     def receive_event(self, event):
         """
@@ -71,36 +66,13 @@ class Workflow(object):
         self._state_context.work(event)
 
 
-def read_event(json_event):
-    """
-    Casts the json DTO as an object Event with named properties.
-    It's expected that the json contains id, type, and a payload of values useful to the
-    state machine for the current state / event type
-
-    {
-      "type": "SyndicationComplete",
-      "id": "12345",
-      "payload": {
-        "syndicated_products": 100,
-        "failed_products": 5,
-        "dfm_path": "\\server\shared\folder\dfm.xml",
-        "encode_products": true
-      }
-    }
-
-    """
-    j = json.loads(json_event,
-                   object_hook= lambda d: namedtuple('Event', d.keys())(*d.values()))
-    return j
-
-
 def workflow_filename(id):
-    return 'workflows\\{0}.pickle'.format(id)
+    return os.path.join(WORKFLOW_FOLDER, '{0}.pickle'.format(id))
 
 
 def dump_workflow(obj, id):
-    if not os.path.exists('workflows'):
-        os.mkdir('workflows')
+    if not os.path.exists(WORKFLOW_FOLDER):
+        os.mkdir(WORKFLOW_FOLDER)
     pickle.dump(obj, open(workflow_filename(id), 'wb'))
 
 
