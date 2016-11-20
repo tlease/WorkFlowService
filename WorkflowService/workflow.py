@@ -7,7 +7,7 @@ from collections import namedtuple
 
 from dist_state_machine import context
 
-WORKFLOW_FOLDER = os.path.join(os.path.realpath(__file__), 'workflows')
+WORKFLOW_FOLDER = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'workflows')
 
 class WorkflowManager(object):
     """
@@ -17,6 +17,7 @@ class WorkflowManager(object):
 
     def __init__(self):
         self.workflows = {}  # has to hold workflow instances in mem
+        self.get_or_create_workflow(id='abc')
 
     def __enter__(self):
         return self
@@ -25,6 +26,13 @@ class WorkflowManager(object):
         for wf_id in self.workflows:
             wf = self.workflows[wf]
             wf.dump()
+
+    def get_all(self):
+        return sorted(self.workflows.values(), key=lambda x: x.id)
+
+    def add(self, **kwargs):
+        wf = Workflow('DistributionStateMachine', **kwargs)
+        self.workflows[wf.id] = wf
 
     def get_workflow(self, id):
         """
@@ -41,6 +49,10 @@ class WorkflowManager(object):
         wf = self.get_workflow(id)
         if not wf:
             wf = Workflow(type, id)
+
+
+        if not self.workflows.get(id):
+            self.workflows[id] = wf
         return wf
 
 
@@ -78,9 +90,9 @@ def dump_workflow(obj, id):
 
 def load_workflow(id):
     filename = workflow_filename(id)
-    if not os.path.exists(filename):
-        raise Exception("File {0} not found".format(filename))
-    wf = pickle.load(open(filename, 'rb'))
+    wf = None
+    if os.path.exists(filename):
+        wf = pickle.load(open(filename, 'rb'))
     return wf
 
 
