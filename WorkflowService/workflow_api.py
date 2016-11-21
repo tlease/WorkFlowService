@@ -10,7 +10,6 @@ import workflow
 
 app = Flask(__name__)
 api = Api(app)
-wf_manager = workflow.WorkflowManager()
 
 
 class WorkflowAPI(Resource):
@@ -22,14 +21,13 @@ class WorkflowAPI(Resource):
         return marshal(wf, workflow_fields)
 
     def put(self, id):
-        pass
+        fields = request.get_json()
+        res = wf_manager.update(id, **fields)
+        if not res:
+            return {"code": 500, "message": "Error updating workflow"}, 500
+        wf = wf_manager.get_workflow(id)
 
-    def post(self):
-        id = request["id"]
-        type = request["type"] or "DistributionStateMachine"
-        wf = wf_manager.get_or_create_workflow(type, id)
-
-        return marshal(wf, workflow_fields), 201
+        return marshal(wf, workflow_fields), 200
 
     def delete(self, id):
         pass
@@ -92,4 +90,5 @@ api.add_resource(WorkflowListAPI, '/workflows')
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    with workflow.WorkflowManager() as wf_manager:
+        app.run(debug=True)

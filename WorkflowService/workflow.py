@@ -11,13 +11,12 @@ WORKFLOW_FOLDER = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'wor
 
 class WorkflowManager(object):
     """
-    Creates and manages state machines. Receives events and forwards them
-    to the correct state machine.
+    Creates and manages Workflows. Receives events and forwards them
+    to the correct Workflow instance.
     """
 
     def __init__(self):
         self.workflows = {}  # has to hold workflow instances in mem
-        self.get_or_create_workflow(id='abc')
 
     def __enter__(self):
         return self
@@ -33,10 +32,19 @@ class WorkflowManager(object):
     def add(self, **kwargs):
         wf = Workflow('DistributionStateMachine', **kwargs)
         self.workflows[wf.id] = wf
+        wf.dump()
+
+    def update(self, id, **kwargs):
+        wf = self.get_workflow(id)
+        if not wf:
+            return False
+        wf.update(**kwargs)
+
+        return True
 
     def get_workflow(self, id):
         """
-        First check in mem, if not there check disk
+        First check in mem, if not there check disk.
         """
         wf = self.workflows.get(id, None)
         if not wf:
@@ -59,7 +67,10 @@ class WorkflowManager(object):
 class Workflow(object):
     """
     instance of a workflow. Has an ID, maitains a reference to a StateMachine context.
+    Has arbitrary attributes injected by the creator and workers that are relevant to
+    whatever state machine is in process.
     """
+
     def __init__(self, state_machine_type, id=None, priority=10, **kwargs):
         self.id = id or generate_id()
         context = get_state_machine(state_machine_type)
@@ -76,6 +87,9 @@ class Workflow(object):
         """
         print 'Workflow {0} recv event {1}'.format(self.id, event)
         self._state_context.work(event)
+
+    def update(self, **kwargs):
+        self.__dict__.update(kwargs)
 
 
 def workflow_filename(id):
